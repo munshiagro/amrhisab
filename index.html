@@ -37,7 +37,7 @@ button,input,select{font:inherit;color:inherit}button{border:0;cursor:pointer}a{
 .btn{width:100%;padding:14px;border-radius:16px;background:linear-gradient(145deg,#17935b,#0a4d32);color:#fff;font-weight:700;font-size:16px;box-shadow:0 8px 18px #0a4d3230}
 .btn.s{width:auto;padding:9px 16px;font-size:14px}.btn.gh{background:#e8efeb;color:#33463c;box-shadow:none}.btn.gd{background:linear-gradient(145deg,#f4cb5c,#d9a02a);color:#3a2a00}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.chips button{padding:8px 14px;border-radius:14px;background:#edf3ef;font-size:14px}.chips button.on{background:var(--g);color:#fff}
-#dl,#cf{position:fixed;inset:0;display:none;place-items:center;padding:16px}#dl{z-index:20}#cf{z-index:30}.on{display:grid}
+#dl,#cf{position:fixed;inset:0;display:none;place-items:center;padding:16px}#dl{z-index:20}#cf{z-index:30}#dl.on,#cf.on{display:grid}
 .bk{position:absolute;inset:0;background:#04201499;backdrop-filter:blur(5px)}
 .dlg{position:relative;width:min(92vw,410px);max-height:86vh;overflow:auto;background:#fff;border-radius:28px;padding:20px;box-shadow:0 24px 60px #0006;animation:pop .22s ease}
 @keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}}
@@ -61,6 +61,7 @@ button,input,select{font:inherit;color:inherit}button{border:0;cursor:pointer}a{
 <script>
 const $=s=>document.querySelector(s),K='amar-hishab-v1',pad=n=>String(n).padStart(2,'0'),J=JSON.stringify;
 let S={tx:[],acc:[],meals:{},rt:{},debt:[],bud:[],sav:[],cats:['বাসা ভাড়া','গাড়ি ভাড়া','খাবার খরচ','নাস্তা খরচ','অন্যান্য খরচ'],icats:['বেতন','ব্যবসা','অন্যান্য আয়'],pin:''};
+const DEF=JSON.parse(JSON.stringify(S));
 try{S=Object.assign(S,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
 const save=()=>localStorage.setItem(K,J(S)),uid=()=>Date.now()*1000+Math.floor(Math.random()*1000);
 const bn=n=>Number(n||0).toLocaleString('bn-BD',{maximumFractionDigits:2}),tk=n=>'৳'+bn(n);
@@ -70,7 +71,7 @@ const MN=['জানুয়ারি','ফেব্রুয়ারি','ম
 const COL=['#0d8f5f','#e9a800','#d9455b','#3b82f6','#8b5cf6','#f97316','#14b8a6','#ec4899','#84cc16','#64748b'];
 const colr=s=>COL[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COL.length];
 let tab='home',per='m',mo=new Date(),ft='e',sc=0,dp=null;
-const NAV=[['home','🏠','হোম'],['tx','🧾','লেনদেন'],['meal','🍛','মিল'],['acc','🏦','ব্যাংক'],['more','☰','আরও']],SUB={debt:1,bud:1,sav:1,rep:1,cat:1};
+const NAV=[['home','🏠','হোম'],['tx','🧾','লেনদেন'],['meal','🍛','মিল'],['acc','🏦','ব্যাংক'],['more','☰','আরও']],SUB={debt:1,bud:1,sav:1,rep:1,cat:1,bk:1};
 $('#nav').innerHTML=NAV.map(n=>`<button data-t="${n[0]}" onclick="go('${n[0]}')"><span>${n[1]}</span>${n[2]}</button>`).join('');
 const go=t=>{tab=t;view()};
 const tot=()=>S.acc.reduce((a,x)=>a+x.b,0),sum=(l,t)=>l.filter(x=>x.t==t).reduce((a,x)=>a+x.a,0);
@@ -82,7 +83,7 @@ function range(){const n=new Date();let a,b;
 const inP=()=>{const[a,b]=range();return S.tx.filter(t=>t.d>=a&&t.d<=b)};
 const seg=()=>`<div class="seg">${[['w','সাপ্তাহিক'],['m','মাসিক'],['y','বার্ষিক']].map(k=>`<button class="${per==k[0]?'on':''}" onclick="per='${k[0]}';view()">${k[1]}</button>`).join('')}</div>`;
 const isInst=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-const hd=()=>`<div class="hd"><b>💰 আমার হিসাব</b><span>${isInst()?'':'<button onclick="inst()">⬇ ইনস্টল</button>'}<button onclick="lock()">⎋ লগআউট</button></span></div>`;
+const hd=()=>`<div class="hd"><b>💰 আমার হিসাব</b><span>${isInst()?'':'<button onclick="inst()">⬇ ইনস্টল</button>'}<button onclick="go('bk')">⬆ ব্যাকআপ</button></span></div>`;
 const ov=(l,big,it)=>`<div class="ovc"><p>${l}</p><h2>${big}</h2><div class="two">${it.map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('')}</div></div>`;
 const J2=(k,id,x='')=>`<span class="ac">${x}<a onclick='ed("${k}",${J(id)})'>✎</a><a onclick='rm("${k}",${J(id)})'>🗑</a></span>`;
 const accN=id=>(S.acc.find(a=>a.id==id)||{}).n;
@@ -108,7 +109,7 @@ function ev(s){s=String(s||'').replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭
 function ap(t,s){const a=S.acc.find(x=>x.id==t.ac);if(a)a.b+=s*(t.t=='i'?t.a:-t.a)}
 function ensureAcc(){if(!S.acc.length){S.acc.push({id:uid(),n:'হাতে নগদ',b:0});save()}}
 const accO=()=>S.acc.map(a=>[a.id,a.n+' ('+tk(a.b)+')']);
-async function rm(k,id){if(!await ask('এটি মুছে ফেলবেন? আর ফেরানো যাবে না।'))return;if(k=='tx'){const t=S.tx.find(x=>x.id==id);if(t)ap(t,-1)}S[k]=S[k].filter(x=>x.id!=id);save();view();toast('মুছে ফেলা হয়েছে')}
+async function rm(k,id){if(!await ask('এটি মুছে ফেলবেন? ভুল হলে ব্যাকআপ পেজ থেকে ফিরিয়ে আনতে পারবেন।'))return;snap('মোছার আগের অবস্থা');if(k=='tx'){const t=S.tx.find(x=>x.id==id);if(t)ap(t,-1)}S[k]=S[k].filter(x=>x.id!=id);save();view();toast('মুছে ফেলা হয়েছে')}
 const ed=(k,id)=>({tx:openTx,acc:fAcc,debt:fDebt,bud:fBud,sav:fSav})[k](id);
 /* লেনদেন ফর্ম */
 function openTx(id){ensureAcc();const t=id!=null?S.tx.find(x=>x.id==id):null;ft=t?t.t:'e';const L=()=>ft=='e'?S.cats:S.icats;sc=t?Math.max(0,L().indexOf(t.c)):0;
@@ -141,7 +142,7 @@ function addSav(id){const s=S.sav.find(x=>x.id==id);form('জমা করুন
 function fDep(){ensureAcc();const ym=ds(mo).slice(0,7);form('খাবার বাবদ জমা',[{k:'a',l:'টাকা',n:2},{k:'ac',l:'কোন অ্যাকাউন্ট থেকে',o:accO()},{k:'d',l:'তারিখ',t:'date',v:ym==ds().slice(0,7)?ds():ym+'-01'}],o=>{const x={id:uid(),t:'e',a:o.a,c:'খাবার খরচ',d:o.d,n:'মিল জমা',m:1,ac:o.ac};S.tx.push(x);ap(x,1)})}
 /* ভিউ */
 function vHome(){const l=inP(),ex=sum(l,'e'),cats=bycat(l);
- $('#app').innerHTML=hd()+ov('মোট ব্যালেন্স',tk(tot()),[['আয় ↗',tk(sum(l,'i'))],['খরচ ↙',tk(ex)]])+seg()+dnpn()+
+ $('#app').innerHTML=hd()+ov('মোট ব্যালেন্স',tk(tot()),[['আয় ↗',tk(sum(l,'i'))],['খরচ ↙',tk(ex)]])+seg()+dnpn()+bkWarn()+
  `<div class="card"><h3>খাত অনুযায়ী খরচ</h3>${ex?donut(cats,ex)+cats.map(([c,v])=>`<div class="row"><i style="background:${colr(c)}">${c[0]}</i><div><b>${c}</b><small>${bn((v/ex*100).toFixed(1))}%</small></div><b>${tk(v)}</b></div>`).join(''):'<p class="hint">এই সময়ে কোনো খরচ নেই</p>'}</div>
  <div class="card"><h3>সাম্প্রতিক <a onclick="go('tx')" style="color:var(--g2);font-size:13px">সব দেখুন</a></h3>${[...l].sort((a,b)=>b.id-a.id).slice(0,5).map(txRow).join('')||'<p class="hint">+ চেপে প্রথম লেনদেন যোগ করুন</p>'}</div>`}
 function vTx(){const l=[...inP()].sort((a,b)=>b.d.localeCompare(a.d)||b.id-a.id),i=sum(l,'i'),e=sum(l,'e');
@@ -164,12 +165,12 @@ function vBud(){const ym=ds().slice(0,7),sp=c=>S.tx.filter(t=>t.t=='e'&&t.c==c&&
  $('#app').innerHTML=hd()+ov('এ মাসের বাজেট বাকি',tk(T-U),[['মোট বাজেট',tk(T)],['খরচ হয়েছে',tk(U)]])+`<div style="margin:0 14px"><button class="btn gd" onclick="fBud()">+ বাজেট যোগ</button></div><div class="card">${S.bud.map(b=>{const s=sp(b.c),p=s/b.a*100,c=p>100?'#d9455b':p>80?'#e9a800':'#14804f';return `<div style="margin-bottom:14px"><div class="row" style="padding:0;border:0"><div><b>${b.c}</b><small>${tk(s)} / ${tk(b.a)} • ${bn(Math.round(p))}%</small></div>${J2('bud',b.id)}</div><div class="bar"><u style="width:${Math.min(100,p)}%;background:${c}"></u></div></div>`}).join('')||'<p class="hint">কোনো বাজেট নেই</p>'}</div>`}
 function vSav(){const T=S.sav.reduce((a,x)=>a+x.t,0),U=S.sav.reduce((a,x)=>a+x.s,0);
  $('#app').innerHTML=hd()+ov('মোট সঞ্চয়',tk(U),[['লক্ষ্য',tk(T)],['বাকি',tk(Math.max(0,T-U))]])+`<div style="margin:0 14px"><button class="btn gd" onclick="fSav()">+ নতুন লক্ষ্য</button></div><div class="card">${S.sav.map(s=>{const p=s.s/s.t*100;return `<div style="margin-bottom:14px"><div class="row" style="padding:0;border:0"><div><b>${s.n}</b><small>${tk(s.s)} / ${tk(s.t)} • ${bn(Math.round(p))}%${s.dt?' • '+bd(s.dt):''}</small></div>${J2('sav',s.id,`<a onclick="addSav(${s.id})">➕</a>`)}</div><div class="bar"><u style="width:${Math.min(100,p)}%;background:linear-gradient(90deg,#14804f,#e9b949)"></u></div></div>`}).join('')||'<p class="hint">কোনো লক্ষ্য নেই</p>'}</div>`}
-function vMore(){$('#app').innerHTML=hd()+ov('মোট ব্যালেন্স',tk(tot()),[['দেনা',tk(dsum('n'))],['পাওনা',tk(dsum('p'))]])+`<div class="tl"><button onclick="go('debt')"><span>🤝</span>দেনা-পাওনা</button><button onclick="go('bud')"><span>🎯</span>বাজেট</button><button onclick="go('sav')"><span>🐖</span>সঞ্চয়</button><button onclick="go('cat')"><span>🏷️</span>খাত</button><button onclick="go('rep')"><span>📊</span>রিপোর্ট</button><button onclick="inst()"><span>⬇️</span>ইনস্টল</button><button onclick="setPin()"><span>🔒</span>পিন লক</button></div>`}
+function vMore(){$('#app').innerHTML=hd()+ov('মোট ব্যালেন্স',tk(tot()),[['দেনা',tk(dsum('n'))],['পাওনা',tk(dsum('p'))]])+`<div class="tl"><button onclick="go('debt')"><span>🤝</span>দেনা-পাওনা</button><button onclick="go('bud')"><span>🎯</span>বাজেট</button><button onclick="go('sav')"><span>🐖</span>সঞ্চয়</button><button onclick="go('cat')"><span>🏷️</span>খাত</button><button onclick="go('rep')"><span>📊</span>রিপোর্ট</button><button onclick="go('bk')"><span>💾</span>ব্যাকআপ</button><button onclick="inst()"><span>⬇️</span>ইনস্টল</button><button onclick="setPin()"><span>🔒</span>পিন লক</button></div>`}
 function vRep(){const l=inP(),ex=sum(l,'e'),cats=bycat(l),y=new Date().getFullYear(),mx=[];let M=1;
  for(let m=0;m<12;m++){const t=S.tx.filter(x=>x.d.startsWith(y+'-'+pad(m+1))),a=sum(t,'i'),b=sum(t,'e');mx.push([a,b]);M=Math.max(M,a,b)}
  $('#app').innerHTML=hd()+ov('সময়কালের খরচ',tk(ex),[['আয়',tk(sum(l,'i'))],['নিট',tk(sum(l,'i')-ex)]])+seg()+`<div class="card"><h3>খাত অনুযায়ী</h3>${cats.map(([c,v])=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><span>${c}</span><b>${tk(v)}</b></div><div class="bar"><u style="width:${v/ex*100}%;background:${colr(c)}"></u></div></div>`).join('')||'<p class="hint">তথ্য নেই</p>'}</div>
  <div class="card"><h3>${bn(y)} সাল <small style="font-weight:400;font-size:11px"><b class="g">■</b> আয় <b class="r">■</b> খরচ</small></h3><div class="yb">${mx.map(v=>`<div><u style="height:${v[0]/M*100}%;background:#14804f"></u><u style="height:${v[1]/M*100}%;background:#d9455b"></u></div>`).join('')}</div><div class="ar">${MN.map(m=>`<span>${m.slice(0,2)}</span>`).join('')}</div></div>
- <div class="card"><h3>ব্যাকআপ</h3><p class="hint">তথ্য শুধু এই ফোনে থাকে। ফোন বদলালে বা ব্রাউজার ডাটা মুছলে হারাবে, তাই নিয়মিত ব্যাকআপ নিন।</p><button class="btn" style="margin-bottom:8px" onclick="expo()">⬆ ব্যাকআপ ডাউনলোড</button><button class="btn gh" onclick="$('#imp').click()">⬇ ব্যাকআপ রিস্টোর</button><input type="file" id="imp" accept=".json" hidden onchange="impo(this.files[0])"></div>`}
+ <div class="card"><button class="btn gd" onclick="go('bk')">💾 ব্যাকআপ ও রিস্টোর</button></div>`}
 function vCat(){const blk=(key,t)=>`<div class="card"><h3>${t}<button class="btn s" onclick="fCat('${key}')">+ নতুন</button></h3>${S[key].map((c,i)=>`<div class="row"><i style="background:${colr(c)}">${c[0]}</i><div><b>${c}</b></div><span class="ac"><a onclick="fCat('${key}',${i})">✎</a><a onclick="rmCat('${key}',${i})">🗑</a></span></div>`).join('')||'<p class="hint">কোনো খাত নেই</p>'}</div>`;
  $('#app').innerHTML=hd()+ov('মোট খাত',bn(S.cats.length+S.icats.length)+' টি',[['খরচের খাত',bn(S.cats.length)],['আয়ের খাত',bn(S.icats.length)]])+blk('cats','খরচের খাত')+blk('icats','আয়ের খাত')}
 function fCat(key,i){const old=i!=null?S[key][i]:null;
@@ -177,10 +178,26 @@ function fCat(key,i){const old=i!=null?S[key][i]:null;
   if(old){const t=key=='cats'?'e':'i';S.tx.forEach(x=>{if(x.t==t&&x.c==old)x.c=o.n});if(key=='cats')S.bud.forEach(b=>{if(b.c==old)b.c=o.n});S[key][i]=o.n;S[key]=[...new Set(S[key])]}
   else if(!S[key].includes(o.n))S[key].push(o.n)},!!old)}
 async function rmCat(key,i){if(!await ask('খাতটি মুছবেন? আগের লেনদেনগুলো থেকে যাবে।'))return;S[key].splice(i,1);save();view();toast('মুছে ফেলা হয়েছে')}
-function view(){({home:vHome,tx:vTx,meal:vMeal,acc:vAcc,more:vMore,debt:vDebt,bud:vBud,sav:vSav,rep:vRep,cat:vCat})[tab]();document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==(SUB[tab]?'more':tab)));scrollTo(0,0)}
+const SK='amar-hishab-snaps',DAY=864e5;
+const fmt=t=>new Date(t).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+const snaps=()=>{try{return JSON.parse(localStorage.getItem(SK)||'[]')}catch(e){return[]}};
+function snap(l){if(!S.tx.length&&!S.acc.length)return;const a=snaps();a.unshift({t:Date.now(),l,d:S});try{localStorage.setItem(SK,JSON.stringify(a.slice(0,20)))}catch(e){}}
+const bkObj=()=>({app:'amar-hishab',v:1,at:new Date().toISOString(),data:S}),bkName=()=>'amar-hishab-backup-'+ds()+'.json';
+const bkDays=()=>S.lastBk?Math.floor((Date.now()-S.lastBk)/DAY):null;
+const bkWarn=()=>(S.tx.length||S.acc.length)&&(bkDays()===null||bkDays()>=7)?`<div class="card" style="background:#fff6d6;border-color:#f1dc9a" onclick="go('bk')"><b>⚠️ ব্যাকআপ নিন</b><p class="hint" style="margin:4px 0 0">${bkDays()===null?'এখনো কোনো ব্যাকআপ নেওয়া হয়নি।':bn(bkDays())+' দিন ধরে ব্যাকআপ নেওয়া হয়নি।'} ট্যাপ করুন।</p></div>`:'';
+function expo(){const b=new Blob([JSON.stringify(bkObj())],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=bkName();document.body.appendChild(a);a.click();a.remove();S.lastBk=Date.now();save();toast('✔ ব্যাকআপ ফাইল ডাউনলোড হয়েছে');if(tab=='bk')view()}
+async function shareBk(){const f=new File([JSON.stringify(bkObj())],bkName(),{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'আমার হিসাব ব্যাকআপ'});S.lastBk=Date.now();save();view()}catch(e){}}else toast('এই ফোনে শেয়ার চলবে না, ডাউনলোড ব্যবহার করুন')}
+function impo(f){if(!f)return;const r=new FileReader();r.onload=async()=>{try{let d=JSON.parse(r.result);d=d.data||d;if(!Array.isArray(d.tx)||!Array.isArray(d.acc))throw 0;
+ if(!await ask(`ব্যাকআপে আছে ${bn(d.tx.length)}টি লেনদেন ও ${bn(d.acc.length)}টি অ্যাকাউন্ট। বর্তমান তথ্য এটি দিয়ে বদলে যাবে (বর্তমান অবস্থা আগে সংরক্ষিত থাকবে)। নিশ্চিত?`))return;
+ snap('রিস্টোরের আগের অবস্থা');S=Object.assign(JSON.parse(JSON.stringify(DEF)),d);save();view();toast('✔ তথ্য ফিরিয়ে আনা হয়েছে')}catch(e){toast('ফাইলটি সঠিক ব্যাকআপ নয়')}};r.readAsText(f)}
+async function rst(i){const x=snaps()[i];if(!x)return;if(!await ask('এই সময়ের ('+fmt(x.t)+') অবস্থায় ফিরে যাবেন? বর্তমান অবস্থা আগে সংরক্ষিত থাকবে।'))return;snap('ফেরার আগের অবস্থা');S=Object.assign(JSON.parse(JSON.stringify(DEF)),x.d);save();view();toast('✔ ফিরিয়ে আনা হয়েছে')}
+function vBk(){const d=bkDays(),a=snaps();
+ $('#app').innerHTML=hd()+ov('সর্বশেষ ব্যাকআপ',S.lastBk?(d==0?'আজ':bn(d)+' দিন আগে'):'নেওয়া হয়নি',[['লেনদেন',bn(S.tx.length)],['অ্যাকাউন্ট',bn(S.acc.length)]])+
+ `<div class="card"><h3>ব্যাকআপ নিন</h3><p class="hint">সব তথ্য একটি ফাইলে সেভ হবে। ফাইলটি Google Drive, WhatsApp বা কম্পিউটারে রেখে দিন।</p><button class="btn gd" style="margin-bottom:8px" onclick="expo()">⬇ ব্যাকআপ ফাইল ডাউনলোড</button><button class="btn gh" onclick="shareBk()">📤 শেয়ার / Drive-এ পাঠান</button></div>
+ <div class="card"><h3>ফিরিয়ে আনুন (রিস্টোর)</h3><p class="hint">ডাটা মুছে গেলে বা নতুন ফোনে ব্যাকআপ ফাইল বেছে নিন।</p><button class="btn" onclick="$('#imp').click()">📂 ব্যাকআপ ফাইল বেছে নিন</button><input type="file" id="imp" accept=".json,application/json" hidden onchange="impo(this.files[0]);this.value=''"></div>
+ <div class="card"><h3>অটো সংরক্ষণ (ফোনে)</h3><p class="hint">প্রতিদিন একবার, এবং কিছু মোছা বা রিস্টোরের আগে অ্যাপ নিজে অবস্থা রেখে দেয় (সর্বশেষ ২০টি)। ভুল করে কিছু মুছলে এখান থেকে ফিরতে পারবেন। ব্রাউজার ডাটা মুছলে এগুলোও যাবে, তাই ফাইল ব্যাকআপ জরুরি।</p>${a.map((x,i)=>`<div class="row"><i style="background:${colr(x.l)}">${x.l[0]}</i><div><b>${x.l}</b><small>${fmt(x.t)} • ${bn(x.d.tx.length)} লেনদেন</small></div><button class="btn s gh" onclick="rst(${i})">ফিরুন</button></div>`).join('')||'<p class="hint">এখনো কিছু নেই</p>'}</div>`}
+function view(){({home:vHome,tx:vTx,meal:vMeal,acc:vAcc,more:vMore,debt:vDebt,bud:vBud,sav:vSav,rep:vRep,cat:vCat,bk:vBk})[tab]();document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==(SUB[tab]?'more':tab)));scrollTo(0,0)}
 /* ব্যাকআপ, পিন, ইনস্টল */
-function expo(){const b=new Blob([J(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='amar-hishab-backup-'+ds()+'.json';a.click()}
-function impo(f){if(!f)return;const r=new FileReader();r.onload=async()=>{try{const d=JSON.parse(r.result);if(!d.tx)throw 0;if(await ask('বর্তমান তথ্য মুছে ব্যাকআপ বসানো হবে। নিশ্চিত?')){S=Object.assign(S,d);save();view();toast('✔ রিস্টোর হয়েছে')}}catch(e){toast('ফাইলটি সঠিক নয়')}};r.readAsText(f)}
 const hs=async p=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('amar'+p)))].map(b=>b.toString(16).padStart(2,'0')).join('');
 function setPin(){form(S.pin?'পিন বদলান / বন্ধ করুন':'পিন লক চালু করুন',[{k:'p',l:'৪-৬ সংখ্যার পিন (বন্ধ করতে ফাঁকা রাখুন)',t:'password'}],async o=>{if(o.p&&!/^\d{4,6}$/.test(o.p))return toast('৪-৬ সংখ্যার পিন দিন');S.pin=o.p?await hs(o.p):'';save()})}
 async function lock(){if(!S.pin){if(await ask('লগআউটের জন্য আগে পিন সেট করতে হবে। এখনই সেট করবেন?','পিন সেট করি'))setPin();return}$('#lock').className='lock on'}
@@ -190,5 +207,6 @@ addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e});
 function inst(){if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)return toast('অ্যাপ ইতিমধ্যে ইনস্টল করা আছে ✅');
  if(dp){dp.prompt();dp=null}else ask('iPhone: Safari → Share → Add to Home Screen\nAndroid: Chrome মেনু (⋮) → Install app','ঠিক আছে')}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+(()=>{const td=ds();if(!snaps().some(x=>x.l=='অটো'&&ds(new Date(x.t))==td))snap('অটো')})();
 view();
 </script></body></html>
